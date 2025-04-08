@@ -5,4 +5,4 @@ torchvision
 numpy==1.26.4
 streamlit==1.42.0
 Pillow==10.1.0
-dlib==19.24.4 
+dlib==19.22.0
