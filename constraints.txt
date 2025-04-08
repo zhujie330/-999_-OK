@@ -1,0 +1,1 @@
+dlib==19.24.0  # fake version to satisfy install_requires
