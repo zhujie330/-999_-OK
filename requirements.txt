@@ -9,3 +9,4 @@ Pillow==10.1.0
 psutil==6.0.0
 matplotlib==3.9.1
 torchcam==0.4.0
+torch_dct== 0.1.6
