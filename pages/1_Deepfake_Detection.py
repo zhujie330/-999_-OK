@@ -226,7 +226,8 @@ if uploaded_file is not None:
         # states = torch.load(
         #     os.path.join("D:\\其他\\wehchatfile\\WeChat Files\\wxid_3hhhdkir3jfj22\\FileStorage\\File\\2024-07",
         #                  "CNNSpot.pth"))
-        states = torch.load("./CNNSpot.pth")
+        states = torch.load("./CNNSpot.pth", map_location=torch.device("cpu"))
+
         #print("这里2")
         states = states['model']
         states = {key[2:]: value for key, value in states.items()}
