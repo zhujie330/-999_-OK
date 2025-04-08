@@ -6,3 +6,5 @@ enableXsrfProtection = true  # 启用 XSRF 防护
 # 强制使用预编译二进制包
 no-binary = ":none:"  # 禁用所有二进制包
 only-binary = dlib    # 仅允许dlib使用二进制
+[deploy]
+postInstallScript = "./postinstall.sh"
