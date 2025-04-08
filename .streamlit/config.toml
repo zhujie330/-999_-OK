@@ -1,0 +1,4 @@
+[server]
+headless = true
+enableCORS = true  # 启用跨域请求
+enableXsrfProtection = true  # 启用 XSRF 防护
