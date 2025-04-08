@@ -1,6 +1,5 @@
 cmake==3.30.1          # 强制优先安装
 numpy==1.26.4          # 基础数值库先行
-dlib==19.22.0          # 确保编译前置条件
 face-recognition==1.3.0
 opencv-python-headless==4.9.0.80
 torch
