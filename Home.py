@@ -1,4 +1,7 @@
 import streamlit as st
+import os
+os.system("cmake --version")
+os.system("gcc --version")
 
 st.set_page_config(page_title="图像视频检测", layout="wide")
 
