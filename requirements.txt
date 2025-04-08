@@ -1,0 +1,7 @@
+face_recognition
+torch
+torchvision
+numpy
+opencv-python
+streamlit
+Pillow
