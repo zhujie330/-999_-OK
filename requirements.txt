@@ -1,8 +1,8 @@
 cmake==3.30.1
 face-recognition==1.3.0
 opencv-python-headless==4.9.0.80
-torch==2.6.0+cpu    # 如果不使用 GPU
-torchvision==0.15.2+cpu
+torch
+torchvision
 numpy==1.26.4
 streamlit==1.42.0
 Pillow==10.1.0
