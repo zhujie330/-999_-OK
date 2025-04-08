@@ -3,10 +3,4 @@ headless = true
 enableCORS = true
 enableXsrfProtection = true
 
-[install]
-# 仅允许dlib使用预编译二进制（其他包可源码编译）
-only-binary = dlib
 
-[deploy]
-# 仅在二进制安装失败时触发编译脚本
-postInstallScript = "./postinstall.sh"
