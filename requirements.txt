@@ -1,6 +1,5 @@
---constraint constraints.txt
 dlib-bin==19.24.2
-face-recognition==1.3.0
+face-recognition @ git+https://github.com/zhujie330/face_recognition.git@master 
 opencv-python-headless==4.9.0.80
 torch
 torchvision
