@@ -277,7 +277,7 @@ if uploaded_file is not None:
             # 删除临时文件
             #os.unlink(temp_file_path)
             model = Model(2).to(device)
-            path_to_model = '..\df_model.pt'
+            path_to_model = './df_model.pt'
             model.load_state_dict(torch.load(path_to_model, device))
             model.eval()
             prediction, confidence = predict(model, video_dataset)
