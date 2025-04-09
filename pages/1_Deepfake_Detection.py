@@ -204,9 +204,9 @@ def predict(model, img):
         logger.info("🚀 正在执行 model(img)")
         
         with st.spinner('🧠 正在进行模型推理...请稍候（可能需要40秒）'):
-        start_time = time.time()
-        output = model(img)
-        end_time = time.time()
+            start_time = time.time()
+            output = model(img)
+            end_time = time.time()
         st.success(f"✅ 模型推理完成，用时 {end_time - start_time:.2f} 秒")
         st.write("✅ 前向传播完成，返回类型:", type(output))
         logger.info(f"✅ 前向传播完成，返回类型: {type(output)}")
