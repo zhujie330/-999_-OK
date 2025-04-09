@@ -173,31 +173,23 @@ class validation_dataset():
 
 
 def predict(model, img):
-    st.write("问题在这20")
-    fmap, logits = model(img.to(device))
-    st.write("问题在这21")
-    weight_softmax = model.linear1.weight.detach().cpu().numpy()
-    st.write("问题在这22")
-    logits = sm(logits)
-    st.write("问题在这23")
-    _, prediction = torch.max(logits, 1)
-    st.write("问题在这24")
-    confidence = logits[:, int(prediction.item())].item() * 100
-    st.write("问题在这25")
-    # print('confidence of prediction:', logits[:, int(prediction.item())].item() * 100)
-    # idx = np.argmax(logits.detach().cpu().numpy())
-    # bz, nc, h, w = fmap.shape
-    # out = np.dot(fmap[-1].detach().cpu().numpy().reshape((nc, h * w)).T, weight_softmax[idx, :].T)
-    # predict = out.reshape(h, w)
-    # predict = predict - np.min(predict)
-    # predict_img = predict / np.max(predict)
-    # predict_img = np.uint8(255 * predict_img)
-    # out = cv2.resize(predict_img, (im_size, im_size))
-    # heatmap = cv2.applyColorMap(out, cv2.COLORMAP_JET)
-    # img = im_convert(img[:, -1, :, :, :])
-    # result = heatmap * 0.5 + img * 0.8 * 255
-    # cv2.imwrite('heatmap.png', result)
-    return int(prediction.item()), confidence
+    try:
+        st.write("问题在这20")
+        fmap, logits = model(img.to(device))
+        st.write("问题在这21")
+        weight_softmax = model.linear1.weight.detach().cpu().numpy()
+        st.write("问题在这22")
+        logits = sm(logits)
+        st.write("问题在这23")
+        _, prediction = torch.max(logits, 1)
+        st.write("问题在这24")
+        confidence = logits[:, int(prediction.item())].item() * 100
+        st.write("问题在这25")
+        return int(prediction.item()), confidence
+    except Exception as e:
+        st.error(f"模型推理出错: {e}")
+        raise RuntimeError(f"模型推理出错: {e}")
+
 
 
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
