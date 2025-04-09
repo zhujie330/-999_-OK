@@ -172,57 +172,85 @@ class validation_dataset():
         return frames.unsqueeze(0)
 
 
+import torch.nn.functional as F
+import streamlit as st
+import logging
+
+# 设置日志配置
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
+
 def predict(model, img):
     try:
         st.write("🟢 进入 predict 函数")
+        logger.info("🟢 进入 predict 函数")
         
         st.write("📥 输入类型:", type(img))
+        logger.info(f"📥 输入类型: {type(img)}")
+
         if isinstance(img, torch.Tensor):
             st.write("📐 输入 shape:", img.shape)
+            logger.info(f"📐 输入 shape: {img.shape}")
         else:
             st.warning("⚠️ 输入 img 不是 torch.Tensor！")
+            logger.warning("⚠️ 输入 img 不是 torch.Tensor！")
 
         img = img.to(device)
         st.write("✅ img.to(device) 成功")
+        logger.info("✅ img.to(device) 成功")
 
         # 前向传播
         st.write("🚀 正在执行 model(img)")
+        logger.info("🚀 正在执行 model(img)")
+        
         output = model(img)
         st.write("✅ 前向传播完成，返回类型:", type(output))
+        logger.info(f"✅ 前向传播完成，返回类型: {type(output)}")
 
         # 防止模型只返回一个结果时出错
         if isinstance(output, tuple):
             fmap, logits = output
             st.write("📦 fmap shape:", fmap.shape)
             st.write("📦 logits shape:", logits.shape)
+            logger.info(f"📦 fmap shape: {fmap.shape}")
+            logger.info(f"📦 logits shape: {logits.shape}")
         else:
             fmap = None
             logits = output
             st.warning("⚠️ 模型只返回了一个值，假设是 logits")
+            logger.warning("⚠️ 模型只返回了一个值，假设是 logits")
 
         # 权重获取
         try:
             weight_softmax = model.linear1.weight.detach().cpu().numpy()
             st.write("🎯 获取 linear1 权重成功，shape:", weight_softmax.shape)
+            logger.info(f"🎯 获取 linear1 权重成功，shape: {weight_softmax.shape}")
         except Exception as e:
             st.warning(f"⚠️ 获取 linear1 权重失败: {e}")
+            logger.warning(f"⚠️ 获取 linear1 权重失败: {e}")
 
         logits = F.softmax(logits, dim=1)
         st.write("✅ Softmax 计算完成")
+        logger.info("✅ Softmax 计算完成")
 
         _, prediction = torch.max(logits, 1)
         st.write("📊 预测结果标签:", int(prediction.item()))
+        logger.info(f"📊 预测结果标签: {int(prediction.item())}")
 
         confidence = logits[:, int(prediction.item())].item() * 100
         st.write("📈 预测置信度:", confidence)
+        logger.info(f"📈 预测置信度: {confidence}")
 
         return int(prediction.item()), confidence
 
     except Exception as e:
         st.error(f"❌ 模型推理出错: {e}")
+        logger.error(f"❌ 模型推理出错: {e}")
         import traceback
         st.text(traceback.format_exc())
+        logger.error(f"异常详情:\n{traceback.format_exc()}")
         raise RuntimeError(f"模型推理出错: {e}")
+
 
 
 
