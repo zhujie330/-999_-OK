@@ -291,6 +291,7 @@ if uploaded_file is not None:
                 st.error(f"处理视频文件时出错：{e}")
 
 
+
             st.info(f"📋the face in video is **{prediction}**")
             st.info(f"📋the confidence is **{confidence}**")
             # for _ in range(frame_count):
