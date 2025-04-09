@@ -173,11 +173,17 @@ class validation_dataset():
 
 
 def predict(model, img):
+    st.write("问题在这20")
     fmap, logits = model(img.to(device))
+    st.write("问题在这21")
     weight_softmax = model.linear1.weight.detach().cpu().numpy()
+    st.write("问题在这22")
     logits = sm(logits)
+    st.write("问题在这23")
     _, prediction = torch.max(logits, 1)
+    st.write("问题在这24")
     confidence = logits[:, int(prediction.item())].item() * 100
+    st.write("问题在这25")
     # print('confidence of prediction:', logits[:, int(prediction.item())].item() * 100)
     # idx = np.argmax(logits.detach().cpu().numpy())
     # bz, nc, h, w = fmap.shape
