@@ -268,18 +268,27 @@ if uploaded_file is not None:
         # 检测人脸按钮
         if st.button('**start to detect**'):
             t1 = time.time()
+            print("问题在这1")
             # 将二进制数据写入临时文件
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                print("问题在这2")
                 temp_file.write(video_bytes)
+                print("问题在这3")
                 temp_file_path = temp_file.name
+                print("问题在这4")
             # 使用临时文件路径创建 VideoCapture 对象
             cap = cv2.VideoCapture(temp_file_path)
+            print("问题在这5")
             frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            print("问题在这6")
             video_dataset = validation_dataset(temp_file_path)
+            print("问题在这7")
             video_dataset = video_dataset.get_dataset()
+            print("问题在这8")
             # 删除临时文件
             #os.unlink(temp_file_path)
             model = Model(2).to(device)
+            print("问题在这9")
             path_to_model = './df_model.pt'
             model.load_state_dict(torch.load(path_to_model, device))
             model.eval()
