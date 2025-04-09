@@ -16,7 +16,7 @@ import tempfile
 import time
 import os
 import logging
-
+import torch.nn.functional as F
 logging.basicConfig(level=logging.DEBUG)
 
 print("哈哈哈")
@@ -174,20 +174,54 @@ class validation_dataset():
 
 def predict(model, img):
     try:
-        st.write("问题在这20")
-        fmap, logits = model(img.to(device))
-        st.write("问题在这21")
-        weight_softmax = model.linear1.weight.detach().cpu().numpy()
-        st.write("问题在这22")
-        logits = sm(logits)
-        st.write("问题在这23")
+        st.write("🟢 进入 predict 函数")
+        
+        st.write("📥 输入类型:", type(img))
+        if isinstance(img, torch.Tensor):
+            st.write("📐 输入 shape:", img.shape)
+        else:
+            st.warning("⚠️ 输入 img 不是 torch.Tensor！")
+
+        img = img.to(device)
+        st.write("✅ img.to(device) 成功")
+
+        # 前向传播
+        st.write("🚀 正在执行 model(img)")
+        output = model(img)
+        st.write("✅ 前向传播完成，返回类型:", type(output))
+
+        # 防止模型只返回一个结果时出错
+        if isinstance(output, tuple):
+            fmap, logits = output
+            st.write("📦 fmap shape:", fmap.shape)
+            st.write("📦 logits shape:", logits.shape)
+        else:
+            fmap = None
+            logits = output
+            st.warning("⚠️ 模型只返回了一个值，假设是 logits")
+
+        # 权重获取
+        try:
+            weight_softmax = model.linear1.weight.detach().cpu().numpy()
+            st.write("🎯 获取 linear1 权重成功，shape:", weight_softmax.shape)
+        except Exception as e:
+            st.warning(f"⚠️ 获取 linear1 权重失败: {e}")
+
+        logits = F.softmax(logits, dim=1)
+        st.write("✅ Softmax 计算完成")
+
         _, prediction = torch.max(logits, 1)
-        st.write("问题在这24")
+        st.write("📊 预测结果标签:", int(prediction.item()))
+
         confidence = logits[:, int(prediction.item())].item() * 100
-        st.write("问题在这25")
+        st.write("📈 预测置信度:", confidence)
+
         return int(prediction.item()), confidence
+
     except Exception as e:
-        st.error(f"模型推理出错: {e}")
+        st.error(f"❌ 模型推理出错: {e}")
+        import traceback
+        st.text(traceback.format_exc())
         raise RuntimeError(f"模型推理出错: {e}")
 
 
