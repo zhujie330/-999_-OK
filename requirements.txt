@@ -1,8 +1,8 @@
 dlib-bin==19.24.2
 face-recognition @ git+https://github.com/zhujie330/face_recognition.git@master 
 opencv-python-headless==4.9.0.80
-torch==2.0.1+cu118  # 固定CUDA 11.8版本[1,2](@ref)
-torchvision==0.15.2+cu118  # 与PyTorch 2.0.1严格匹配[1,4](@ref)
+torch==2.0.1
+torchvision==0.15.2
 numpy==1.26.4
 streamlit==1.42.0
 Pillow==10.1.0
