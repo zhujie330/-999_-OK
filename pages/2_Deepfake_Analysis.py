@@ -69,7 +69,7 @@ device = torch.device('cpu')
 model = models.resnet50(pretrained=False)
 model.fc = torch.nn.Linear(2048, 2)
 # states = torch.load(
-#     os.path.join("D:\\其他\\wehchatfile\\WeChat Files\\wxid_3hhhdkir3jfj22\\FileStorage\\File\\2024-07", "CNNSpot.pth"))
+#     os.path.join("D:\\其他\\wehchatfile\\WeChat Files\\wxid_3hhhdkir3jfj22\\FileStorage\\File\\2024-07", "model1.pth"))
 states = torch.load("./model1.pth", map_location=torch.device("cpu"))
 
 states = states['model']
