@@ -290,10 +290,15 @@ if uploaded_file is not None:
             model = Model(2).to(device)
             st.write("问题在这9")
             path_to_model = './df_model.pt'
+            st.write("问题在这10")
             model.load_state_dict(torch.load(path_to_model, device))
+            st.write("问题在这11")
             model.eval()
+            st.write("问题在这12")
             prediction, confidence = predict(model, video_dataset)
+            st.write("问题在这13")
             if prediction == 0:
+                st.write("问题在这14")
                 prediction = "real"
             else:
                 prediction = "fake"
