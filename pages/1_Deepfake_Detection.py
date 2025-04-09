@@ -262,7 +262,8 @@ st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
 st.sidebar.header("🔎Deepfake Detection")
 
 st.write("# Demo for Deepfake Detection🔎")
-choice = st.sidebar.radio(label="What do you want to detect?", options=('Image', 'Video'), index=0)
+#choice = st.sidebar.radio(label="What do you want to detect?", options=('Image', 'Video'), index=0)
+choice = st.sidebar.radio(label="What do you want to detect?", options=('Image',), index=0)
 
 # 上传图片或视频
 if choice == 'Image':
