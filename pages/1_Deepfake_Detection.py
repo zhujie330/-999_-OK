@@ -258,37 +258,39 @@ if uploaded_file is not None:
                 print("哈哈4")
 
 
-        else:
-            try:
-                video_file = uploaded_file.name
-                video_bytes = uploaded_file.read()
-                st.video(video_bytes)
-    
-                if st.button('**start to detect**'):
-                    try:
-                        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                            temp_file.write(video_bytes)
-                            temp_file_path = temp_file.name
-    
-                        video_dataset = validation_dataset(temp_file_path)
-                        video_dataset = video_dataset.get_dataset()
-    
-                        model = Model(2).to(device)
-                        path_to_model = './df_model.pt'
-                        model.load_state_dict(torch.load(path_to_model, map_location=device))
-                        model.eval()
-    
-                        prediction, confidence = predict(model, video_dataset)
-                        prediction = "real" if prediction == 0 else "fake"
-    
-                        st.info(f"📋the face in video is **{prediction}**")
-                        st.info(f"📋the confidence is **{confidence:.2f}**")
-    
-                    except Exception as e:
-                        st.error(f"视频分析时出错：{e}")
-    
-            except Exception as e:
-                st.error(f"处理视频文件时出错：{e}")
+    else:
+        # 读取上传的视频
+        video_file = uploaded_file.name
+        video_bytes = uploaded_file.read()
+        print("视频1")
+        st.video(video_bytes)
+        print("视频2")
+        # 检测人脸按钮
+        if st.button('**start to detect**'):
+            t1 = time.time()
+            # 将二进制数据写入临时文件
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                temp_file.write(video_bytes)
+                temp_file_path = temp_file.name
+            # 使用临时文件路径创建 VideoCapture 对象
+            cap = cv2.VideoCapture(temp_file_path)
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            video_dataset = validation_dataset(temp_file_path)
+            video_dataset = video_dataset.get_dataset()
+            # 删除临时文件
+            #os.unlink(temp_file_path)
+            model = Model(2).to(device)
+            path_to_model = './df_model.pt'
+            model.load_state_dict(torch.load(path_to_model, device))
+            model.eval()
+            prediction, confidence = predict(model, video_dataset)
+            if prediction == 0:
+                prediction = "real"
+            else:
+                prediction = "fake"
+
+            st.info(f"📋the face in video is **{prediction}**")
+            st.info(f"📋the confidence is **{confidence}**")
 
 
 
