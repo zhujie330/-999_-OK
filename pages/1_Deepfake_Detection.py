@@ -327,20 +327,20 @@ if uploaded_file is not None:
         # 读取上传的视频
         video_file = uploaded_file.name
         video_bytes = uploaded_file.read()
-        st.write("视频1")
+        #st.write("视频1")
         st.video(video_bytes)
-        st.write("视频2")
+        #st.write("视频2")
         # 检测人脸按钮
         if st.button('**start to detect**'):
             t1 = time.time()
-            st.write("问题在这1")
+            #st.write("问题在这1")
             # 将二进制数据写入临时文件
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                st.write("问题在这2")
+                #st.write("问题在这2")
                 temp_file.write(video_bytes)
-                st.write("问题在这3")
+                #st.write("问题在这3")
                 temp_file_path = temp_file.name
-                st.write("问题在这4")
+                #st.write("问题在这4")
             # 使用临时文件路径创建 VideoCapture 对象
             cap = cv2.VideoCapture(temp_file_path)
             st.write("问题在这5")
