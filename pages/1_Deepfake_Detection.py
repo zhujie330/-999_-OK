@@ -22,24 +22,38 @@ from io import BytesIO
 logging.basicConfig(level=logging.DEBUG)
 from modelscope import snapshot_download
 print("哈哈哈")
-# 获取当前脚本所在的目录，即 pages 文件夹
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 print(current_dir)
-# 强制使用CPU进行调试
+
 device = torch.device('cpu')
-model_dir = snapshot_download('zhujie67o/model_use414')
+st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
+
+
+model_dir = os.path.join(tempfile.gettempdir(), 'model_use414')
+
+
+model_file_path = os.path.join(model_dir, 'model1.pth')  # 假设模型文件是 model1.pth
+
+
+if os.path.exists(model_file_path):
+    st.write("✔️ 模型已加载")
+else:
+    st.write("⚠️ 由于 Git LFS 流量已达上线，自动转从 ModelScope 联网加载模型，请稍后")
+
+    model_dir = snapshot_download('zhujie67o/model_use414')  # 通过ModelScope下载模型
+    st.write("✔️ 模型已加载")
+
 print(f"Using device: {device}")
-# 加载人脸检测器
+
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 
-# 检测人脸的函数
+
 def detect_faces(image):
     # 转换为灰度图像
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    # 在灰度图上检测人脸
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-    # 在原始图像上绘制检测到的人脸
     for (x, y, w, h) in faces:
         cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
     return image, faces
@@ -256,7 +270,7 @@ def predict(model, img):
         raise RuntimeError(f"模型推理出错: {e}")
 
 
-st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
+
 st.sidebar.header("🔎Deepfake Detection")
 
 st.write("# Demo for Deepfake Detection🔎")
@@ -320,62 +334,4 @@ if uploaded_file is not None:
                 print("哈哈4")
 
 
-    else:
-        # 读取上传的视频
-        video_file = uploaded_file.name
-        video_bytes = uploaded_file.read()
-        st.write("视频1")
-        st.video(video_bytes)
-        st.write("视频2")
-        # 检测人脸按钮
-        if st.button('**start to detect**'):
-            t1 = time.time()
-            st.write("问题在这1")
-            # 将二进制数据写入临时文件
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                st.write("问题在这2")
-                temp_file.write(video_bytes)
-                st.write("问题在这3")
-                temp_file_path = temp_file.name
-                st.write("问题在这4")
-            # 使用临时文件路径创建 VideoCapture 对象
-            cap = cv2.VideoCapture(temp_file_path)
-            st.write("问题在这5")
-            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            st.write("问题在这6")
-            video_dataset = validation_dataset(temp_file_path)
-            st.write("问题在这7")
-            video_dataset = video_dataset.get_dataset()
-            st.write("问题在这8")
-            # 删除临时文件
-            # os.unlink(temp_file_path)
-            model = Model(2).to(device)
-            st.write("问题在这9")
-            path_to_model = './df_model.pt'
-            st.write("问题在这10")
-            model.load_state_dict(torch.load(path_to_model, device))
-            st.write("问题在这11")
-            model.eval()
-            st.write("问题在这12")
-            prediction, confidence = predict(model, video_dataset)
-            st.write("问题在这13")
-            if prediction == 0:
-                st.write("问题在这14")
-                prediction = "real"
-            else:
-                prediction = "fake"
 
-            st.info(f"📋the face in video is **{prediction}**")
-            st.info(f"📋the confidence is **{confidence}**")
-
-            st.info(f"📋the face in video is **{prediction}**")
-            st.info(f"📋the confidence is **{confidence}**")
-            # for _ in range(frame_count):
-            #     ret, frame = cap.read()
-            #     if not ret:
-            #         break
-            #     result_frame, _ = detect_faces(frame)
-            #
-            #     st.image(result_frame, caption='result', use_column_width=True)
-            # t2 = time.time()
-            # st.write(f"检测完成，总共用时 {t2 - t1} 秒。")
