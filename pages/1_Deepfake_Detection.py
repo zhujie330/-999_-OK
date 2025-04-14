@@ -17,15 +17,17 @@ import time
 import os
 import logging
 import torch.nn.functional as F
+import requests
+from io import BytesIO
 logging.basicConfig(level=logging.DEBUG)
-
+from modelscope import snapshot_download
 print("哈哈哈")
 # 获取当前脚本所在的目录，即 pages 文件夹
 current_dir = os.path.dirname(os.path.abspath(__file__))
 print(current_dir)
 # 强制使用CPU进行调试
 device = torch.device('cpu')
-
+model_dir = snapshot_download('zhujie67o/model_use414')
 print(f"Using device: {device}")
 # 加载人脸检测器
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -84,6 +86,7 @@ def predict_img(image_tensor):
             return prediction, confidence.item()
     except Exception as e:
         raise RuntimeError(f"预测出错: {e}")
+
 
 class Model(nn.Module):
     def __init__(self, num_classes, latent_dim=2048, lstm_layers=1, hidden_dim=2048, bidirectional=False):
@@ -180,11 +183,12 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
+
 def predict(model, img):
     try:
         st.write("🟢 进入 predict 函数")
         logger.info("🟢 进入 predict 函数")
-        
+
         st.write("📥 输入类型:", type(img))
         logger.info(f"📥 输入类型: {type(img)}")
 
@@ -202,12 +206,8 @@ def predict(model, img):
         # 前向传播
         st.write("🚀 正在执行 model(img)")
         logger.info("🚀 正在执行 model(img)")
-        
-        with st.spinner('🧠 正在进行模型推理...请稍候（可能需要40秒）'):
-            start_time = time.time()
-            output = model(img)
-            end_time = time.time()
-        st.success(f"✅ 模型推理完成，用时 {end_time - start_time:.2f} 秒")
+
+        output = model(img)
         st.write("✅ 前向传播完成，返回类型:", type(output))
         logger.info(f"✅ 前向传播完成，返回类型: {type(output)}")
 
@@ -256,20 +256,17 @@ def predict(model, img):
         raise RuntimeError(f"模型推理出错: {e}")
 
 
-
-
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
 st.sidebar.header("🔎Deepfake Detection")
 
 st.write("# Demo for Deepfake Detection🔎")
-#choice = st.sidebar.radio(label="What do you want to detect?", options=('Image', 'Video'), index=0)
-choice = st.sidebar.radio(label="What do you want to detect?", options=('Image',), index=0)
+choice = st.sidebar.radio(label="What do you want to detect?", options=('Image'), index=0)
 
 # 上传图片或视频
 if choice == 'Image':
-    uploaded_file = st.file_uploader(label="**choose the image you want to judge**",type=['jpg', 'png', 'jpeg'])
+    uploaded_file = st.file_uploader(label="**choose the image you want to judge**", type=['jpg', 'png', 'jpeg'])
 else:
-    uploaded_file = st.file_uploader(label="**choose the video you want to judge**",type=['mp4', 'avi'])
+    uploaded_file = st.file_uploader(label="**choose the video you want to judge**", type=['mp4', 'avi'])
 
 # add_selectbox = st.sidebar.selectbox(
 #     label="How would you like to be contacted?",
@@ -286,17 +283,17 @@ if uploaded_file is not None:
         # model
         model = models.resnet50(pretrained=False)
         model.fc = torch.nn.Linear(2048, 2)
-        #print("这里1")
+        # print("这里1")
         device = torch.device('cpu')
         current_dir = os.path.dirname(os.path.abspath(__file__))
         # states = torch.load(
-        #     os.path.join("D:\\其他\\wehchatfile\\WeChat Files\\wxid_3hhhdkir3jfj22\\FileStorage\\File\\2024-07",
-        #                  "CNNSpot.pth"))
+        #      os.path.join("D:\\其他\\wehchatfile\\WeChat Files\\wxid_3hhhdkir3jfj22\\FileStorage\\File\\2024-07",
+        #                   "CNNSpot.pth"))
 
-        
-        states = torch.load("./model1.pth", map_location=torch.device("cpu"))
+        # states = torch.load("./model1.pth", map_location=torch.device("cpu"))
 
-        #print("这里2")
+        states = torch.load(f"{model_dir}/model1.pth", map_location=torch.device("cpu"))
+        # print("这里2")
         states = states['model']
         states = {key[2:]: value for key, value in states.items()}
         model.load_state_dict(states)
@@ -327,20 +324,20 @@ if uploaded_file is not None:
         # 读取上传的视频
         video_file = uploaded_file.name
         video_bytes = uploaded_file.read()
-        #st.write("视频1")
+        st.write("视频1")
         st.video(video_bytes)
-        #st.write("视频2")
+        st.write("视频2")
         # 检测人脸按钮
         if st.button('**start to detect**'):
             t1 = time.time()
-            #st.write("问题在这1")
+            st.write("问题在这1")
             # 将二进制数据写入临时文件
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                #st.write("问题在这2")
+                st.write("问题在这2")
                 temp_file.write(video_bytes)
-                #st.write("问题在这3")
+                st.write("问题在这3")
                 temp_file_path = temp_file.name
-                #st.write("问题在这4")
+                st.write("问题在这4")
             # 使用临时文件路径创建 VideoCapture 对象
             cap = cv2.VideoCapture(temp_file_path)
             st.write("问题在这5")
@@ -351,7 +348,7 @@ if uploaded_file is not None:
             video_dataset = video_dataset.get_dataset()
             st.write("问题在这8")
             # 删除临时文件
-            #os.unlink(temp_file_path)
+            # os.unlink(temp_file_path)
             model = Model(2).to(device)
             st.write("问题在这9")
             path_to_model = './df_model.pt'
@@ -370,8 +367,6 @@ if uploaded_file is not None:
 
             st.info(f"📋the face in video is **{prediction}**")
             st.info(f"📋the confidence is **{confidence}**")
-
-
 
             st.info(f"📋the face in video is **{prediction}**")
             st.info(f"📋the confidence is **{confidence}**")
