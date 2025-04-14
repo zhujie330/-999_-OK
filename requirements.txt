@@ -11,3 +11,4 @@ matplotlib==3.9.1
 torchcam==0.4.0
 torch_dct== 0.1.6
 scipy== 1.11.4
+modelscope== 1.25.0
