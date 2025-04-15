@@ -296,14 +296,14 @@ if choice == 'Image':
                         st.info(f"📋the face in image is ​​**​​{prediction}​​**​​")
                         st.info(f"📋the confidence is ​​**​​{confidence:.2f}​​**​​")
 
-                                        except Exception as e:
+                    except Exception as e:
                         st.error(f"检测出错: {e}")
 
     uploaded_file = st.file_uploader(
         label="​​**​​选择<span style='color:red;font-size:1.2em'>本地</span>想要检测的图片​​**​​",
         type=['jpg', 'png', 'jpeg']
     )
-)
+
 else:
     # 添加一个按钮用于选择默认测试视频
     if st.button("📁 使用默认测试视频"):
