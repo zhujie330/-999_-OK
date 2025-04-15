@@ -299,10 +299,23 @@ if choice == 'Image':
                     except Exception as e:
                         st.error(f"检测出错: {e}")
 
+    st.markdown("""
+    <style>
+    .upload-label {
+        color: black;
+        font-size: 1em;
+    }
+    .upload-label .highlight {
+        color: red;
+        font-size: 1.2em;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     uploaded_file = st.file_uploader(
-    label="​**​选择<font color='red'>本地</font>想要检测的图片​**​", 
-    type=['jpg', 'png', 'jpeg']
-)
+        label="<span class='upload-label'>选择<span class='highlight'>本地</span>想要检测的图片</span>", 
+        type=['jpg', 'png', 'jpeg']
+    )
 
 else:
     # 添加一个按钮用于选择默认测试视频
