@@ -300,7 +300,7 @@ if choice == 'Image':
                         st.error(f"检测出错: {e}")
 
     
-    uploaded_file = st.file_uploader(label="​**​选择本地想要检测的的图片​**​", type=['jpg', 'png', 'jpeg'])
+    uploaded_file = st.file_uploader(label="​**​选择本地想要检测999的的图片​**​", type=['jpg', 'png', 'jpeg'])
 else:
     # 添加一个按钮用于选择默认测试视频
     if st.button("📁 使用默认测试视频"):
