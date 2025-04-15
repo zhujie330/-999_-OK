@@ -21,6 +21,7 @@ import requests
 from io import BytesIO
 logging.basicConfig(level=logging.DEBUG)
 from modelscope import snapshot_download
+import base64
 print("哈哈哈")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -76,22 +77,16 @@ def preprocess(img):
     return image_tensor
 
 
-# def predict_img(image_tensor):
-#     logit = model(image_tensor.to(device))
-#     cls = torch.argmax(logit, dim=1).item()
-#     confidence = torch.softmax(logit, dim=1)[0][cls]
-#     prediction = "real" if cls == 0 else "fake"
-#     return prediction, confidence
 def predict_img(image_tensor):
     print("开始预测")
     try:
-        model.eval()
+        st.session_state.model.eval()
         with torch.no_grad():
             print("将图像张量移动到设备")
             image_tensor = image_tensor.to(device)
             print(f"图像张量大小: {image_tensor.size()}, 数据类型: {image_tensor.dtype}")
             print("模型推理开始")
-            logit = model(image_tensor)
+            logit = st.session_state.model(image_tensor)
             print("模型推理结束")
             cls = torch.argmax(logit, dim=1).item()
             confidence = torch.softmax(logit, dim=1)[0][cls]
@@ -189,104 +184,143 @@ class validation_dataset():
         return frames.unsqueeze(0)
 
 
-import torch.nn.functional as F
-import streamlit as st
-import logging
-
-# 设置日志配置
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger()
-
-
-def predict(model, img):
-    try:
-        st.write("🟢 进入 predict 函数")
-        logger.info("🟢 进入 predict 函数")
-
-        st.write("📥 输入类型:", type(img))
-        logger.info(f"📥 输入类型: {type(img)}")
-
-        if isinstance(img, torch.Tensor):
-            st.write("📐 输入 shape:", img.shape)
-            logger.info(f"📐 输入 shape: {img.shape}")
-        else:
-            st.warning("⚠️ 输入 img 不是 torch.Tensor！")
-            logger.warning("⚠️ 输入 img 不是 torch.Tensor！")
-
-        img = img.to(device)
-        st.write("✅ img.to(device) 成功")
-        logger.info("✅ img.to(device) 成功")
-
-        # 前向传播
-        st.write("🚀 正在执行 model(img)")
-        logger.info("🚀 正在执行 model(img)")
-
-        output = model(img)
-        st.write("✅ 前向传播完成，返回类型:", type(output))
-        logger.info(f"✅ 前向传播完成，返回类型: {type(output)}")
-
-        # 防止模型只返回一个结果时出错
-        if isinstance(output, tuple):
-            fmap, logits = output
-            st.write("📦 fmap shape:", fmap.shape)
-            st.write("📦 logits shape:", logits.shape)
-            logger.info(f"📦 fmap shape: {fmap.shape}")
-            logger.info(f"📦 logits shape: {logits.shape}")
-        else:
-            fmap = None
-            logits = output
-            st.warning("⚠️ 模型只返回了一个值，假设是 logits")
-            logger.warning("⚠️ 模型只返回了一个值，假设是 logits")
-
-        # 权重获取
-        try:
-            weight_softmax = model.linear1.weight.detach().cpu().numpy()
-            st.write("🎯 获取 linear1 权重成功，shape:", weight_softmax.shape)
-            logger.info(f"🎯 获取 linear1 权重成功，shape: {weight_softmax.shape}")
-        except Exception as e:
-            st.warning(f"⚠️ 获取 linear1 权重失败: {e}")
-            logger.warning(f"⚠️ 获取 linear1 权重失败: {e}")
-
-        logits = F.softmax(logits, dim=1)
-        st.write("✅ Softmax 计算完成")
-        logger.info("✅ Softmax 计算完成")
-
-        _, prediction = torch.max(logits, 1)
-        st.write("📊 预测结果标签:", int(prediction.item()))
-        logger.info(f"📊 预测结果标签: {int(prediction.item())}")
-
-        confidence = logits[:, int(prediction.item())].item() * 100
-        st.write("📈 预测置信度:", confidence)
-        logger.info(f"📈 预测置信度: {confidence}")
-
-        return int(prediction.item()), confidence
-
-    except Exception as e:
-        st.error(f"❌ 模型推理出错: {e}")
-        logger.error(f"❌ 模型推理出错: {e}")
-        import traceback
-        st.text(traceback.format_exc())
-        logger.error(f"异常详情:\n{traceback.format_exc()}")
-        raise RuntimeError(f"模型推理出错: {e}")
-
-
+def image_to_base64(img):
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode()
 
 st.sidebar.header("🔎Deepfake Detection")
 
 st.write("# Demo for Deepfake Detection🔎")
 choice = st.sidebar.radio(label="What do you want to detect?", options=('Image'), index=0)
 
-# 上传图片或视频
 if choice == 'Image':
-    uploaded_file = st.file_uploader(label="**choose the image you want to judge**", type=['jpg', 'png', 'jpeg'])
-else:
-    uploaded_file = st.file_uploader(label="**choose the video you want to judge**", type=['mp4', 'avi'])
+    # 使用session_state保存默认图片显示状态
+    if 'show_default' not in st.session_state:
+        st.session_state.show_default = False
 
-# add_selectbox = st.sidebar.selectbox(
-#     label="How would you like to be contacted?",
-#     options=("Email", "Home phone", "Mobile phone"),
-#     key="t1"
-# )
+    if st.button("📁 使用默认测试图片"):
+        st.session_state.show_default = True
+
+    if st.session_state.show_default:
+        test_image_folder = './test/image'
+        test_image_files = os.listdir(test_image_folder)
+        if test_image_files:
+            # 添加CSS样式
+            st.markdown("""
+            <style>
+            .card {
+                height: 300px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                position: relative;
+            }
+            .card-img {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                overflow: hidden;
+                border-radius: 8px;
+            }
+            .card-img img {
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+            }
+            .card-footer {
+                margin-top: auto;
+                padding: 10px 0;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+            # 创建3列布局
+            cols = st.columns(3)
+
+            for idx, img_file in enumerate(test_image_files):
+                img_path = os.path.join(test_image_folder, img_file)
+                with cols[idx % 3]:  # 自动循环使用3列
+                    try:
+                        img = Image.open(img_path).convert('RGB')
+
+                        # 创建卡片式布局
+                        st.markdown(
+                            f'''
+                            <div class="card">
+                                <div class="card-img">
+                                    <img src="data:image/png;base64,{image_to_base64(img)}">
+                                </div>
+                                <div class="card-footer">
+                            ''',
+                            unsafe_allow_html=True
+                        )
+
+                        # 在底部添加按钮
+                        if st.button(f"选择 {img_file}", key=f"select_{idx}"):
+                            st.session_state.selected_img = img_path
+
+                        st.markdown('</div></div>', unsafe_allow_html=True)
+
+                    except Exception as e:
+                        st.error(f"无法加载图片 {img_file}: {e}")
+
+            # 显示检测区域（保持可见）
+            if 'selected_img' in st.session_state and st.session_state.selected_img:
+                st.success(f"已选择: {os.path.basename(st.session_state.selected_img)}")
+
+                # 显示检测按钮和结果区域
+                if st.button('​​**​​start to detect​​**​​', key="detect_default"):
+                    try:
+                        img = Image.open(st.session_state.selected_img).convert('RGB')
+                        img_array = np.array(img)
+                        image_tensor = preprocess(img_array)
+
+                        # 加载模型（确保模型只加载一次）
+                        if 'model_loaded' not in st.session_state:
+                            model = models.resnet50(pretrained=False)
+                            model.fc = torch.nn.Linear(2048, 2)
+                            states = torch.load(f"{model_dir}/model1.pth",
+                                                map_location=torch.device("cpu"))
+                            states = states['model']
+                            states = {key[2:]: value for key, value in states.items()}
+                            model.load_state_dict(states)
+                            model = model.to(device)
+                            model.eval()
+                            st.session_state.model = model
+                            st.session_state.model_loaded = True
+
+                        # 执行预测
+                        prediction, confidence = predict_img(image_tensor)
+                        st.info(f"📋the face in image is ​​**​​{prediction}​​**​​")
+                        st.info(f"📋the confidence is ​​**​​{confidence:.2f}​​**​​")
+
+                    except Exception as e:
+                        st.error(f"检测出错: {e}")
+
+    # 保留原始文件上传器
+    uploaded_file = st.file_uploader(label="​**​选择要判断的图片​**​", type=['jpg', 'png', 'jpeg'])
+else:
+    # 添加一个按钮用于选择默认测试视频
+    if st.button("📁 使用默认测试视频"):
+        test_video_folder = './test/video'
+        test_video_files = os.listdir(test_video_folder)
+        if test_video_files:
+            # 默认选择第一个测试视频
+            video_path = os.path.join(test_video_folder, test_video_files[0])
+            uploaded_file = open(video_path, 'rb')
+            # 预览默认视频的第一帧
+            cap = cv2.VideoCapture(video_path)
+            ret, frame = cap.read()
+            if ret:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                st.image(frame, caption='默认测试视频首帧')
+            cap.release()
+            uploaded_file.seek(0)  # 重置文件指针以便后续处理
+    # 保留原始文件上传器
+    uploaded_file = st.file_uploader(label="​**​选择要判断的视频​**​", type=['mp4', 'avi'])
+
 
 # 显示结果
 if uploaded_file is not None:
@@ -294,25 +328,17 @@ if uploaded_file is not None:
         # 读取上传的图片
         img = Image.open(uploaded_file).convert('RGB')
         st.image(img, caption='uploaded image')
-        # model
-        model = models.resnet50(pretrained=False)
-        model.fc = torch.nn.Linear(2048, 2)
-        # print("这里1")
-        device = torch.device('cpu')
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        # states = torch.load(
-        #      os.path.join("D:\\其他\\wehchatfile\\WeChat Files\\wxid_3hhhdkir3jfj22\\FileStorage\\File\\2024-07",
-        #                   "CNNSpot.pth"))
-
-        # states = torch.load("./model1.pth", map_location=torch.device("cpu"))
-
-        states = torch.load(f"{model_dir}/model1.pth", map_location=torch.device("cpu"))
-        # print("这里2")
-        states = states['model']
-        states = {key[2:]: value for key, value in states.items()}
-        model.load_state_dict(states)
-        model = model.to(device)
-        model.eval()
+        if 'model_loaded' not in st.session_state:
+            model = models.resnet50(pretrained=False)
+            model.fc = torch.nn.Linear(2048, 2)
+            states = torch.load(f"{model_dir}/model1.pth", map_location=torch.device("cpu"))
+            states = states['model']
+            states = {key[2:]: value for key, value in states.items()}
+            model.load_state_dict(states)
+            model = model.to(device)
+            model.eval()
+            st.session_state.model = model
+            st.session_state.model_loaded = True
 
         img_array = np.array(img)
         image_tensor = preprocess(img_array)
@@ -327,11 +353,8 @@ if uploaded_file is not None:
                 print(f"Error during prediction: {e}")
                 st.error(f"Error during prediction: {e}")
             else:
-                print("哈哈2")
                 st.info(f"📋the face in image is **{prediction}**")
-                print("哈哈3")
                 st.info(f"📋the confidence is **{confidence}**")
-                print("哈哈4")
 
 
 
