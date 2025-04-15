@@ -266,18 +266,18 @@ if choice == 'Image':
                     except Exception as e:
                         st.error(f"无法加载图片 {img_file}: {e}")
 
-            # 显示检测区域（保持可见）
+           
             if 'selected_img' in st.session_state and st.session_state.selected_img:
                 st.success(f"已选择: {os.path.basename(st.session_state.selected_img)}")
 
-                # 显示检测按钮和结果区域
+                
                 if st.button('​​**​​start to detect​​**​​', key="detect_default"):
                     try:
                         img = Image.open(st.session_state.selected_img).convert('RGB')
                         img_array = np.array(img)
                         image_tensor = preprocess(img_array)
 
-                        # 加载模型（确保模型只加载一次）
+                        
                         if 'model_loaded' not in st.session_state:
                             model = models.resnet50(pretrained=False)
                             model.fc = torch.nn.Linear(2048, 2)
@@ -299,8 +299,8 @@ if choice == 'Image':
                     except Exception as e:
                         st.error(f"检测出错: {e}")
 
-    # 保留原始文件上传器
-    uploaded_file = st.file_uploader(label="​**​选择要判断的图片​**​", type=['jpg', 'png', 'jpeg'])
+    
+    uploaded_file = st.file_uploader(label="​**​选择本地想要检测的的图片​**​", type=['jpg', 'png', 'jpeg'])
 else:
     # 添加一个按钮用于选择默认测试视频
     if st.button("📁 使用默认测试视频"):
