@@ -10,12 +10,30 @@ from torchvision import models, transforms
 from torchcam.utils import overlay_mask
 from torchcam.methods import SmoothGradCAMpp
 from torchvision.transforms.v2.functional import to_pil_image
-
+from modelscope import snapshot_download
 from draw_gradient import compute_gradient, visualize_heatmap
 from saliency.gradcam import GradCAM
 
 import os
+
+model_dir = os.path.join(tempfile.gettempdir(), 'model_use414')
+
+
+model_file_path = os.path.join(model_dir, 'model1.pth')
+
+if os.path.exists(model_file_path):
+    st.write("✔️ 模型已加载")
+else:
+    st.write("⚠️ 由于 Git LFS 流量已达上线，自动转从 ModelScope 联网加载模型，请稍后")
+
+    model_dir = snapshot_download('zhujie67o/model_use414')  # 通过ModelScope下载模型
+    st.write("✔️ 模型已加载")
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"  # 允许重复加载 OpenMP
+
+
+
+
+
 def preprocess(img):
     transform = transforms.Compose([
         transforms.ToPILImage(),
@@ -71,8 +89,8 @@ model.fc = torch.nn.Linear(2048, 2)
 # states = torch.load(
 #     os.path.join("D:\\其他\\wehchatfile\\WeChat Files\\wxid_3hhhdkir3jfj22\\FileStorage\\File\\2024-07", "model1.pth"))
 
-states = torch.load("./model1.pth", map_location=torch.device("cpu"))
-
+#states = torch.load("./model1.pth", map_location=torch.device("cpu"))
+states = torch.load(f"{model_dir}/model1.pth", map_location=torch.device("cpu"))
 states = states['model']
 states = {key[2:]: value for key, value in states.items()}
 model.load_state_dict(states)
