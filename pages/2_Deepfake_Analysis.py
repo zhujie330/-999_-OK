@@ -13,7 +13,7 @@ from torchvision.transforms.v2.functional import to_pil_image
 from modelscope import snapshot_download
 from draw_gradient import compute_gradient, visualize_heatmap
 from saliency.gradcam import GradCAM
-
+import tempfile
 import os
 
 model_dir = os.path.join(tempfile.gettempdir(), 'model_use414')
