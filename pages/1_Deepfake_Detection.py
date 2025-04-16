@@ -24,6 +24,8 @@ from modelscope import snapshot_download
 import base64
 print("哈哈哈")
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
+st.sidebar.header("🔎Deepfake Detection")
+st.write("# Demo for Deepfake Detection🔎")
 current_dir = os.path.dirname(os.path.abspath(__file__))
 print(current_dir)
 
@@ -189,9 +191,7 @@ def image_to_base64(img):
     img.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
 
-st.sidebar.header("🔎Deepfake Detection")
 
-st.write("# Demo for Deepfake Detection🔎")
 choice = st.sidebar.radio(label="What do you want to detect?", options=('Image'), index=0)
 
 if choice == 'Image':
