@@ -23,12 +23,12 @@ logging.basicConfig(level=logging.DEBUG)
 from modelscope import snapshot_download
 import base64
 print("哈哈哈")
-
+st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
 current_dir = os.path.dirname(os.path.abspath(__file__))
 print(current_dir)
 
 device = torch.device('cpu')
-st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
+
 
 
 model_dir = os.path.join(tempfile.gettempdir(), 'model_use414')
