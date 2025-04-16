@@ -43,7 +43,7 @@ else:
     st.write("⚠️ 由于 Git LFS 流量已达上线，自动转从 ModelScope 联网加载模型，请稍后")
 
     model_dir = snapshot_download('zhujie67o/model_use414')  # 通过ModelScope下载模型
-    st.write("✔️ 模型已加载")
+    st.write("✔️ 模型已加载, 接下来你可以选择使用系统为您准备的一些测试图片 或者 选择你本地想要上传的图片进行检测")
 
 print(f"Using device: {device}")
 
