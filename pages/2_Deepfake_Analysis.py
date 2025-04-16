@@ -29,7 +29,9 @@ else:
     model_dir = snapshot_download('zhujie67o/model_use414')  # 通过ModelScope下载模型
     st.write("✔️ 模型已加载")
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"  # 允许重复加载 OpenMP
-
+st.set_page_config(page_title="Deepfake Detection", page_icon="🔬")
+st.sidebar.header("🔬Deepfake Detection")
+st.write("# Demo for Deepfake Analysis🔬")
 
 
 
@@ -97,9 +99,7 @@ model.load_state_dict(states)
 model = model.to(device)
 model.eval()
 
-st.set_page_config(page_title="Deepfake Detection", page_icon="🔬")
-st.sidebar.header("🔬Deepfake Detection")
-st.write("# Demo for Deepfake Analysis🔬")
+
 
 map = st.sidebar.radio(
     label="Which would you like to be observe?",
