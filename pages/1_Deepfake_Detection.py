@@ -36,17 +36,23 @@ device = torch.device('cpu')
 
 
 model_dir = os.path.join(tempfile.gettempdir(), 'model_use414')
-
-
-model_file_path = os.path.join(model_dir, 'model1.pth')  # 假设模型文件是 model1.pth
-
+model_file_path = os.path.join(model_dir, 'model1.pth')
 
 if os.path.exists(model_file_path):
     st.write("✔️ 模型已加载")
 else:
     st.write("⚠️ 由于 Git LFS 流量已达上线，自动转从 ModelScope 联网加载模型，请稍后")
 
-    model_dir = snapshot_download('zhujie67o/model_use414')  # 通过ModelScope下载模型
+    # ① 先把旧缓存目录(如果之前下坏了)刪掉
+    cache_dir = pathlib.Path.home() / ".cache" / "modelscope" / "hub" / "models" / "zhujie67o" / "model_use414"
+    shutil.rmtree(cache_dir, ignore_errors=True)
+
+    # ② 重新下载：断点续传 + 单线程，避免并发写坏文件
+    model_dir = snapshot_download(
+        'zhujie67o/model_use414',
+        resume_download=True,   # 断点续传
+        num_threads=1           # 单线程
+    )
     st.write("✔️ 模型已加载, 接下来你可以选择使用系统为您准备的一些测试图片 或者 选择你本地想要上传的图片进行检测")
 
 print(f"Using device: {device}")
