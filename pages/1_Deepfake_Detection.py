@@ -16,14 +16,14 @@ import tempfile
 import time
 import os
 import logging
-import pathlib
-import  shutil
 import torch.nn.functional as F
 import requests
 from io import BytesIO
+
 logging.basicConfig(level=logging.DEBUG)
 from modelscope import snapshot_download
 import base64
+
 print("哈哈哈")
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔎")
 st.sidebar.header("🔎Deepfake Detection")
@@ -33,28 +33,21 @@ print(current_dir)
 
 device = torch.device('cpu')
 
-
-
 model_dir = os.path.join(tempfile.gettempdir(), 'model_use414')
-model_file_path = os.path.join(model_dir, 'model1.pth')
+
+model_file_path = os.path.join(model_dir, 'model1.pth')  # 假设模型文件是 model1.pth
 
 if os.path.exists(model_file_path):
     st.write("✔️ 模型已加载")
 else:
     st.write("⚠️ 由于 Git LFS 流量已达上线，自动转从 ModelScope 联网加载模型，请稍后")
 
-    # ① 先把旧缓存目录(如果之前下坏了)刪掉
-    cache_dir = pathlib.Path.home() / ".cache" / "modelscope" / "hub" / "models" / "zhujie67o" / "model_use414"
-    shutil.rmtree(cache_dir, ignore_errors=True)
-
-    # ② 重新下载：断点续传 + 单线程，避免并发写坏文件
-    model_dir = snapshot_download('zhujie67o/model_use414') 
+    model_dir = snapshot_download('zhujie67o/model_use414')  # 通过ModelScope下载模型
     st.write("✔️ 模型已加载, 接下来你可以选择使用系统为您准备的一些测试图片 或者 选择你本地想要上传的图片进行检测")
 
 print(f"Using device: {device}")
 
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
 
 
 def detect_faces(image):
@@ -270,18 +263,15 @@ if choice == 'Image':
                     except Exception as e:
                         st.error(f"无法加载图片 {img_file}: {e}")
 
-           
             if 'selected_img' in st.session_state and st.session_state.selected_img:
                 st.success(f"已选择: {os.path.basename(st.session_state.selected_img)}")
 
-                
                 if st.button('​​**​​start to detect​​**​​', key="detect_default"):
                     try:
                         img = Image.open(st.session_state.selected_img).convert('RGB')
                         img_array = np.array(img)
                         image_tensor = preprocess(img_array)
 
-                        
                         if 'model_loaded' not in st.session_state:
                             model = models.resnet50(pretrained=False)
                             model.fc = torch.nn.Linear(2048, 2)
@@ -333,7 +323,6 @@ else:
     # 保留原始文件上传器
     uploaded_file = st.file_uploader(label="​**​选择要判断的视频​**​", type=['mp4', 'avi'])
 
-
 # 显示结果
 if uploaded_file is not None:
     if choice == 'Image':
@@ -367,6 +356,9 @@ if uploaded_file is not None:
             else:
                 st.info(f"📋the face in image is **{prediction}**")
                 st.info(f"📋the confidence is **{confidence}**")
+
+
+
 
 
 
