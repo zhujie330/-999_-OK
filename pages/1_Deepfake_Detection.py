@@ -48,11 +48,7 @@ else:
     shutil.rmtree(cache_dir, ignore_errors=True)
 
     # ② 重新下载：断点续传 + 单线程，避免并发写坏文件
-    model_dir = snapshot_download(
-        'zhujie67o/model_use414',
-        resume_download=True,   # 断点续传
-        num_threads=1           # 单线程
-    )
+     model_dir = snapshot_download('zhujie67o/model_use414') 
     st.write("✔️ 模型已加载, 接下来你可以选择使用系统为您准备的一些测试图片 或者 选择你本地想要上传的图片进行检测")
 
 print(f"Using device: {device}")
