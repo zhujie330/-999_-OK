@@ -15,20 +15,22 @@ from draw_gradient import compute_gradient, visualize_heatmap
 from saliency.gradcam import GradCAM
 import tempfile
 import os
+from utils_model import get_model_dir 
 
-model_dir = os.path.join(tempfile.gettempdir(), 'model_use414')
 
 
-model_file_path = os.path.join(model_dir, 'model1.pth')
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔬")
 st.sidebar.header("🔬Deepfake Detection")
 st.write("# Demo for Deepfake Analysis🔬")
+
+model_dir = get_model_dir()
+model_file_path = os.path.join(model_dir, 'model1.pth')
 if os.path.exists(model_file_path):
     st.write("✔️ 模型已加载")
 else:
     st.write("⚠️ 由于 Git LFS 流量已达上线，自动转从 ModelScope 联网加载模型，请稍后")
 
-    model_dir = snapshot_download('zhujie67o/model_use414')  # 通过ModelScope下载模型
+
     st.write("✔️ 模型已加载")
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"  # 允许重复加载 OpenMP
 
