@@ -32,7 +32,7 @@ else:
     st.write("⚠️ 模型文件未找到，请稍候重试")
 
 
-    st.write("✔️ 模型已加载")
+
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"  # 允许重复加载 OpenMP
 
 
