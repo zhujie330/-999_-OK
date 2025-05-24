@@ -8,7 +8,6 @@ def get_model_dir():
     model_dir = os.path.join(tempfile.gettempdir(), 'model_use414')
     model_file_path = os.path.join(model_dir, 'model1.pth')
 
-    is_first_download = not os.path.exists(model_file_path)
-    if is_first_download:
+    if not os.path.exists(model_file_path):
         model_dir = snapshot_download('zhujie67o/model_use414')
-    return model_dir, is_first_download
+    return model_dir
