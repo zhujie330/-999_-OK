@@ -26,6 +26,7 @@ model_dir = get_model_dir()
 model_file_path = os.path.join(model_dir, 'model1.pth')
 if os.path.exists(model_file_path):
     st.write("✔️ 模型已加载")
+    st.write("✔️ 接下来你可以选择使用系统为您准备的一些测试图片 或者 选择您本地想要上传的图片进行分析")
 else:
     st.write("⚠️ 模型文件未找到，请稍候重试")
 
@@ -92,7 +93,7 @@ if 'show_default' not in st.session_state:
     st.session_state.show_default = False
 if 'selected_img' not in st.session_state:
     st.session_state.selected_img = None
-st.markdown("## 使用系统测试图片")
+st.markdown("## 使用为您准备的图片进行分析")
 if st.button("📁 使用默认测试图片"):
     st.session_state.show_default = True
 
@@ -164,7 +165,7 @@ if st.session_state.selected_img:
     image_tensor = preprocess(img_array)
 
 
-st.markdown("## 上传你自己的图片进行分析")
+st.markdown("## 上传您想要分析的本地图片")
 uploaded_file = st.file_uploader(label="**选择你要分析的图片**", type=['jpg', 'png', 'jpeg'])
 
 if uploaded_file is not None:
