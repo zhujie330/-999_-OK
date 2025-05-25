@@ -1,5 +1,4 @@
 import os
-
 import face_recognition
 import numpy as np
 import streamlit as st
@@ -14,10 +13,7 @@ from modelscope import snapshot_download
 from draw_gradient import compute_gradient, visualize_heatmap
 from saliency.gradcam import GradCAM
 import tempfile
-import os
-from utils_model import get_model_dir 
-
-
+from utils_model import get_model_dir
 
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔬")
 st.sidebar.header("🔬Deepfake Detection")
@@ -31,13 +27,7 @@ if os.path.exists(model_file_path):
 else:
     st.write("⚠️ 模型文件未找到，请稍候重试")
 
-
-
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"  # 允许重复加载 OpenMP
-
-
-
-
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 def preprocess(img):
     transform = transforms.Compose([
@@ -46,8 +36,6 @@ def preprocess(img):
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    # image = cv2.imread(img)
-    # image_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     faces = face_recognition.face_locations(img)
     top, right, bottom, left = faces[0]
     face_img = img[top:bottom, left:right, :]
@@ -55,8 +43,7 @@ def preprocess(img):
     image_tensor = transform(face_img).unsqueeze(0)
     return image_tensor
 
-
-def show_feature_map(layer_index):
+def show_feature_map(layer_index, image_tensor):
     if layer_index == 4:
         model_new = torch.nn.Sequential(*(list(model.children())[:-2]))
     else:
@@ -68,84 +55,96 @@ def show_feature_map(layer_index):
         if layer is None:
             raise ValueError(f"Layer not found in the model.")
         model_new = torch.nn.Sequential(*(list(model.children())[:list(model.children()).index(layer)]))
-    # model_new = torch.nn.Sequential(*(list(model.children())[:-2]))
     model_new = model_new.to(device)
-    image_tensor = preprocess(img_array)
     feature_map = model_new(image_tensor.to(device))
-    # 创建一个新的 Matplotlib 图形
     fig, axs = plt.subplots(8, 8, figsize=(10, 10))
     st.text(f'feature map after layer{layer_index}')
-    # 循环遍历每个特征图并将其添加到 Matplotlib 图形中
     for i in range(64):
         row = i // 8
         col = i % 8
         axs[row, col].imshow(feature_map[0, i].cpu().detach().numpy(), cmap='viridis')
         axs[row, col].axis('off')
-    # 显示 Matplotlib 图形在 Streamlit 中
     st.pyplot(fig)
 
-
-# .streamlit
-#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 device = torch.device('cpu')
-# model
 model = models.resnet50(pretrained=False)
 model.fc = torch.nn.Linear(2048, 2)
-# states = torch.load(
-#     os.path.join("D:\\其他\\wehchatfile\\WeChat Files\\wxid_3hhhdkir3jfj22\\FileStorage\\File\\2024-07", "model1.pth"))
-
-#states = torch.load("./model1.pth", map_location=torch.device("cpu"))
-states = torch.load(f"{model_dir}/model1.pth", map_location=torch.device("cpu"))
+states = torch.load(f"{model_dir}/model1.pth", map_location=device)
 states = states['model']
 states = {key[2:]: value for key, value in states.items()}
 model.load_state_dict(states)
 model = model.to(device)
 model.eval()
 
-
-
 map = st.sidebar.radio(
-    label="Which would you like to be observe?",
+    label="Which would you like to observe?",
     options=("Feature Map", "Saliency Map", "Class Activation Map"), index=None
 )
-uploaded_file = st.file_uploader(label="**choose the image you want to analyze**", type=['jpg', 'png', 'jpeg'])
-if uploaded_file is not None:
-    img = Image.open(uploaded_file).convert("RGB")
-    st.image(img, caption='uploaded image', use_column_width=True)
 
+# 显示默认测试图片和上传入口
+if 'show_default' not in st.session_state:
+    st.session_state.show_default = False
+if 'selected_img' not in st.session_state:
+    st.session_state.selected_img = None
+
+st.markdown("## 使用系统测试图片")
+if st.button("📁 显示系统测试图片"):
+    st.session_state.show_default = True
+
+img_array = None
+image_tensor = None
+
+if st.session_state.show_default:
+    test_image_folder = './test/image'
+    test_image_files = os.listdir(test_image_folder)
+
+    if test_image_files:
+        cols = st.columns(3)
+        for idx, img_file in enumerate(test_image_files):
+            img_path = os.path.join(test_image_folder, img_file)
+            with cols[idx % 3]:
+                try:
+                    img = Image.open(img_path).convert("RGB")
+                    st.image(img, caption=img_file, use_column_width=True)
+                    if st.button(f"选择 {img_file}", key=f"select_{idx}"):
+                        st.session_state.selected_img = img_path
+                        st.success(f"已选择：{img_file}")
+                except Exception as e:
+                    st.error(f"无法加载图片: {e}")
+
+if st.session_state.selected_img:
+    img = Image.open(st.session_state.selected_img).convert("RGB")
+    st.image(img, caption='选中的测试图片', use_column_width=True)
     img_array = np.array(img)
     image_tensor = preprocess(img_array)
 
+st.markdown("## 上传你自己的图片进行分析")
+uploaded_file = st.file_uploader(label="**选择你要分析的图片**", type=['jpg', 'png', 'jpeg'])
+
+if uploaded_file is not None:
+    img = Image.open(uploaded_file).convert("RGB")
+    st.image(img, caption='上传的图片', use_column_width=True)
+    img_array = np.array(img)
+    image_tensor = preprocess(img_array)
+
+if image_tensor is not None:
     if map == "Feature Map":
         col1, col2, col3 = st.columns(3)
-
         with col1:
-            show_feature_map(2)
-
+            show_feature_map(2, image_tensor)
         with col2:
-            show_feature_map(3)
-
+            show_feature_map(3, image_tensor)
         with col3:
-            show_feature_map(4)
+            show_feature_map(4, image_tensor)
 
     elif map == "Saliency Map":
-        # 计算梯度
         gradient = compute_gradient(image_tensor.to(device), model)
-
-        # 可视化热度图
         heatmap, saliency = visualize_heatmap(gradient)
-
-        # 将输入图像转换成 numpy 数组
         input_image_np = image_tensor.squeeze().permute(1, 2, 0).detach().cpu().numpy()
-
-        # 将热度图和输入图像相加
         superimposed_img = heatmap + input_image_np
-
-        # 归一化相加后的图像
         superimposed_img /= np.max(superimposed_img)
 
         col1, col2, col3 = st.columns(3)
-
         with col1:
             fig, ax = plt.subplots()
             ax.imshow(input_image_np)
@@ -166,18 +165,13 @@ if uploaded_file is not None:
 
     elif map == "Class Activation Map":
         with SmoothGradCAMpp(model) as cam_extractor:
-            # Preprocess your data and feed it to the model
             out = model(image_tensor.to(device))
-            # Retrieve the CAM by passing the class index and the model output
             activation_map = cam_extractor(out.squeeze(0).argmax().item(), out)
-        # Resize the CAM and overlay it
         result = overlay_mask(to_pil_image((image_tensor.squeeze(0)*255).to(torch.uint8)),
                               to_pil_image(activation_map[0].squeeze(0), mode='F'), alpha=0.5)
-        # 循环遍历每个特征图并将其添加到 Matplotlib 图形中
         input_image_np = image_tensor.squeeze().permute(1, 2, 0).detach().cpu().numpy()
 
         col1, col2, col3 = st.columns(3)
-
         with col1:
             fig, ax = plt.subplots()
             ax.imshow(input_image_np)
@@ -195,6 +189,3 @@ if uploaded_file is not None:
             ax.imshow(result)
             ax.set_title("class activation map on image")
             st.pyplot(fig)
-
-
-
