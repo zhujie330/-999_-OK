@@ -26,7 +26,7 @@ model_dir = get_model_dir()
 model_file_path = os.path.join(model_dir, 'model1.pth')
 if os.path.exists(model_file_path):
     st.write("✔️ 模型已加载")
-    st.write("✔️ 接下来你可以选择使用系统为您准备的一些测试图片 或者 选择您本地想要上传的图片进行分析")
+    st.write("✔️ 接下来您可以选择使用系统为您准备的一些测试图片 或者 选择您本地想要上传的图片进行分析")
 else:
     st.write("⚠️ 模型文件未找到，请稍候重试")
 
