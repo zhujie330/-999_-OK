@@ -105,7 +105,7 @@ if st.session_state.show_default:
             with cols[idx % 3]:
                 try:
                     img = Image.open(img_path).convert("RGB")
-                    st.image(img, caption=img_file, use_column_width=True)
+                    st.image(img, caption=img_file, use_container_width=True)
                     if st.button(f"选择 {img_file}", key=f"select_{idx}"):
                         st.session_state.selected_img = img_path
                         st.success(f"已选择：{img_file}")
