@@ -14,6 +14,8 @@ from draw_gradient import compute_gradient, visualize_heatmap
 from saliency.gradcam import GradCAM
 import tempfile
 from utils_model import get_model_dir
+import base64
+from io import BytesIO
 
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔬")
 st.sidebar.header("🔬Deepfake Detection")
@@ -80,43 +82,87 @@ map = st.sidebar.radio(
     label="Which would you like to observe?",
     options=("Feature Map", "Saliency Map", "Class Activation Map"), index=None
 )
+def image_to_base64(img: Image.Image) -> str:
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 # 显示默认测试图片和上传入口
 if 'show_default' not in st.session_state:
     st.session_state.show_default = False
 if 'selected_img' not in st.session_state:
     st.session_state.selected_img = None
-
 st.markdown("## 使用系统测试图片")
-if st.button("📁 显示系统测试图片"):
+if st.button("📁 使用默认测试图片"):
     st.session_state.show_default = True
 
-img_array = None
-image_tensor = None
-
-if st.session_state.show_default:
+if st.session_state.get("show_default", False):
     test_image_folder = './test/image'
     test_image_files = os.listdir(test_image_folder)
 
     if test_image_files:
+        st.markdown("""
+        <style>
+        .card {
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .card-img {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        .card-img img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+        .card-footer {
+            margin-top: auto;
+            padding: 10px 0;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
         cols = st.columns(3)
         for idx, img_file in enumerate(test_image_files):
             img_path = os.path.join(test_image_folder, img_file)
             with cols[idx % 3]:
                 try:
-                    img = Image.open(img_path).convert("RGB")
-                    st.image(img, caption=img_file, use_container_width=True)
+                    img = Image.open(img_path).convert('RGB')
+                    st.markdown(
+                        f'''
+                        <div class="card">
+                            <div class="card-img">
+                                <img src="data:image/png;base64,{image_to_base64(img)}">
+                            </div>
+                            <div class="card-footer">
+                        ''',
+                        unsafe_allow_html=True
+                    )
+
                     if st.button(f"选择 {img_file}", key=f"select_{idx}"):
                         st.session_state.selected_img = img_path
-                        st.success(f"已选择：{img_file}")
-                except Exception as e:
-                    st.error(f"无法加载图片: {e}")
 
+                    st.markdown('</div></div>', unsafe_allow_html=True)
+
+                except Exception as e:
+                    st.error(f"无法加载图片 {img_file}: {e}")
+
+# 展示被选择的图片
 if st.session_state.selected_img:
-    img = Image.open(st.session_state.selected_img).convert("RGB")
-    st.image(img, caption='选中的测试图片', use_column_width=True)
+    st.success(f"已选择: {os.path.basename(st.session_state.selected_img)}")
+    img = Image.open(st.session_state.selected_img).convert('RGB')
+    st.image(img, caption='选中的测试图片', use_container_width=True)
     img_array = np.array(img)
     image_tensor = preprocess(img_array)
+
 
 st.markdown("## 上传你自己的图片进行分析")
 uploaded_file = st.file_uploader(label="**选择你要分析的图片**", type=['jpg', 'png', 'jpeg'])
