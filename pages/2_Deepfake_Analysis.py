@@ -174,65 +174,68 @@ if uploaded_file is not None:
     img_array = np.array(img)
     image_tensor = preprocess(img_array)
 
-if image_tensor is not None:
-    if map == "Feature Map":
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            show_feature_map(2, image_tensor)
-        with col2:
-            show_feature_map(3, image_tensor)
-        with col3:
-            show_feature_map(4, image_tensor)
-
-    elif map == "Saliency Map":
-        gradient = compute_gradient(image_tensor.to(device), model)
-        heatmap, saliency = visualize_heatmap(gradient)
-        input_image_np = image_tensor.squeeze().permute(1, 2, 0).detach().cpu().numpy()
-        superimposed_img = heatmap + input_image_np
-        superimposed_img /= np.max(superimposed_img)
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            fig, ax = plt.subplots()
-            ax.imshow(input_image_np)
-            ax.set_title('image')
-            st.pyplot(fig)
-
-        with col2:
-            fig, ax = plt.subplots()
-            ax.imshow(saliency)
-            ax.set_title("saliency map")
-            st.pyplot(fig)
-
-        with col3:
-            fig, ax = plt.subplots()
-            ax.imshow(superimposed_img)
-            ax.set_title("saliency map with image")
-            st.pyplot(fig)
-
-    elif map == "Class Activation Map":
-        with SmoothGradCAMpp(model) as cam_extractor:
-            out = model(image_tensor.to(device))
-            activation_map = cam_extractor(out.squeeze(0).argmax().item(), out)
-        result = overlay_mask(to_pil_image((image_tensor.squeeze(0)*255).to(torch.uint8)),
-                              to_pil_image(activation_map[0].squeeze(0), mode='F'), alpha=0.5)
-        input_image_np = image_tensor.squeeze().permute(1, 2, 0).detach().cpu().numpy()
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            fig, ax = plt.subplots()
-            ax.imshow(input_image_np)
-            ax.set_title("input image")
-            st.pyplot(fig)
-
-        with col2:
-            fig, ax = plt.subplots()
-            ax.imshow(activation_map[0].squeeze(0).detach().cpu().numpy())
-            ax.set_title("class activation map")
-            st.pyplot(fig)
-
-        with col3:
-            fig, ax = plt.subplots()
-            ax.imshow(result)
-            ax.set_title("class activation map on image")
-            st.pyplot(fig)
+if 'image_tensor' in locals():
+    if image_tensor is not None:
+        if map == "Feature Map":
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                show_feature_map(2, image_tensor)
+            with col2:
+                show_feature_map(3, image_tensor)
+            with col3:
+                show_feature_map(4, image_tensor)
+    
+        elif map == "Saliency Map":
+            gradient = compute_gradient(image_tensor.to(device), model)
+            heatmap, saliency = visualize_heatmap(gradient)
+            input_image_np = image_tensor.squeeze().permute(1, 2, 0).detach().cpu().numpy()
+            superimposed_img = heatmap + input_image_np
+            superimposed_img /= np.max(superimposed_img)
+    
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                fig, ax = plt.subplots()
+                ax.imshow(input_image_np)
+                ax.set_title('image')
+                st.pyplot(fig)
+    
+            with col2:
+                fig, ax = plt.subplots()
+                ax.imshow(saliency)
+                ax.set_title("saliency map")
+                st.pyplot(fig)
+    
+            with col3:
+                fig, ax = plt.subplots()
+                ax.imshow(superimposed_img)
+                ax.set_title("saliency map with image")
+                st.pyplot(fig)
+    
+        elif map == "Class Activation Map":
+            with SmoothGradCAMpp(model) as cam_extractor:
+                out = model(image_tensor.to(device))
+                activation_map = cam_extractor(out.squeeze(0).argmax().item(), out)
+            result = overlay_mask(to_pil_image((image_tensor.squeeze(0)*255).to(torch.uint8)),
+                                  to_pil_image(activation_map[0].squeeze(0), mode='F'), alpha=0.5)
+            input_image_np = image_tensor.squeeze().permute(1, 2, 0).detach().cpu().numpy()
+    
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                fig, ax = plt.subplots()
+                ax.imshow(input_image_np)
+                ax.set_title("input image")
+                st.pyplot(fig)
+    
+            with col2:
+                fig, ax = plt.subplots()
+                ax.imshow(activation_map[0].squeeze(0).detach().cpu().numpy())
+                ax.set_title("class activation map")
+                st.pyplot(fig)
+    
+            with col3:
+                fig, ax = plt.subplots()
+                ax.imshow(result)
+                ax.set_title("class activation map on image")
+                st.pyplot(fig)
+else:
+    st.info("📸 请先上传图片或选择默认测试图片")
