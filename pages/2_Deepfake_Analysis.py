@@ -16,7 +16,7 @@ import tempfile
 from utils_model import get_model_dir
 import base64
 from io import BytesIO
-
+import warnings
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔬")
 st.sidebar.header("🔬Deepfake Detection")
 st.write("# Demo for Deepfake Analysis🔬")
@@ -31,7 +31,8 @@ else:
     st.write("⚠️ 模型文件未找到，请稍候重试")
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', message='.*use_column_width.*')
 def preprocess(img):
     transform = transforms.Compose([
         transforms.ToPILImage(),
