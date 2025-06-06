@@ -161,7 +161,7 @@ if st.session_state.get("show_default", False):
 if st.session_state.selected_img:
     st.success(f"已选择: {os.path.basename(st.session_state.selected_img)}")
     img = Image.open(st.session_state.selected_img).convert('RGB')
-    st.image(img, caption='选中的测试图片', use_column_width=True)
+    st.image(img, caption='选中的测试图片', use_container_width=True)
     img_array = np.array(img)
     image_tensor = preprocess(img_array)
 
@@ -171,7 +171,7 @@ uploaded_file = st.file_uploader(label="**选择你要分析的图片**", type=[
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert("RGB")
-    st.image(img, caption='上传的图片', use_container_width=True)
+    st.image(img, caption='上传的图片', use_column_width=True)
     img_array = np.array(img)
     image_tensor = preprocess(img_array)
 
