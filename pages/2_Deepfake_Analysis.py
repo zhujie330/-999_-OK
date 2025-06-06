@@ -17,6 +17,9 @@ from utils_model import get_model_dir
 import base64
 from io import BytesIO
 import warnings
+
+warnings.filterwarnings("ignore")
+
 st.set_page_config(page_title="Deepfake Detection", page_icon="🔬")
 st.sidebar.header("🔬Deepfake Detection")
 st.write("# Demo for Deepfake Analysis🔬")
