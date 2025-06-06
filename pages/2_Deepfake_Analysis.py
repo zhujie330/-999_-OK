@@ -171,7 +171,7 @@ uploaded_file = st.file_uploader(label="**选择你要分析的图片**", type=[
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert("RGB")
-    st.image(img, caption='上传的图片', use_column_width=True)
+    st.image(img, caption='上传的图片', use_container_width=True)
     img_array = np.array(img)
     image_tensor = preprocess(img_array)
 
