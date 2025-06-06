@@ -21,7 +21,8 @@ st.set_page_config(page_title="Deepfake Detection", page_icon="🔬")
 st.sidebar.header("🔬Deepfake Detection")
 st.write("# Demo for Deepfake Analysis🔬")
 st.write("⚠️ 由于 Git LFS 流量已达上线，自动转从 ModelScope 联网加载模型，请稍后")
-
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', message='.*use_column_width.*')
 model_dir = get_model_dir()
 model_file_path = os.path.join(model_dir, 'model1.pth')
 if os.path.exists(model_file_path):
@@ -31,8 +32,7 @@ else:
     st.write("⚠️ 模型文件未找到，请稍候重试")
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-warnings.filterwarnings('ignore', category=DeprecationWarning)
-warnings.filterwarnings('ignore', message='.*use_column_width.*')
+
 def preprocess(img):
     transform = transforms.Compose([
         transforms.ToPILImage(),
